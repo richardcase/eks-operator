@@ -1,0 +1,29 @@
+[
+    {
+        "name": "eks-operator",
+        "config": {
+            "image": "rancher/eks-operator",
+            "live_reload_deps": [
+                "main.go",
+                "go.mod",
+                "go.sum",
+                "controller",
+                "pkg"
+            ],
+            "charts": [
+                {
+                    "dir": "charts/eks-operator-crd",
+                    "container_name": "",
+                    "namespace": "cattle-system",
+                    "custom_deploy_name": "eks-operator-crds"
+                },
+                {
+                    "dir": "charts/eks-operator",
+                    "container_name": "eks-operator",
+                    "namespace": "cattle-system"
+                }
+            ],
+            "label": "EKS"
+        }
+    }
+]
