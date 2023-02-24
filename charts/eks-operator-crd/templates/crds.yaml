@@ -21,6 +21,24 @@ spec:
         properties:
           spec:
             properties:
+              addons:
+                items:
+                  properties:
+                    conflictResolution:
+                      nullable: true
+                      type: string
+                    name:
+                      nullable: true
+                      type: string
+                    serviceAccountRoleARN:
+                      nullable: true
+                      type: string
+                    version:
+                      nullable: true
+                      type: string
+                  type: object
+                nullable: true
+                type: array
               amazonCredentialSecret:
                 nullable: true
                 type: string
@@ -170,6 +188,51 @@ spec:
             type: object
           status:
             properties:
+              addons:
+                items:
+                  properties:
+                    arn:
+                      nullable: true
+                      type: string
+                    createdAt:
+                      nullable: true
+                      type: string
+                    issues:
+                      items:
+                        properties:
+                          code:
+                            nullable: true
+                            type: string
+                          message:
+                            nullable: true
+                            type: string
+                          resourceIds:
+                            items:
+                              nullable: true
+                              type: string
+                            nullable: true
+                            type: array
+                        type: object
+                      nullable: true
+                      type: array
+                    modifiedAt:
+                      nullable: true
+                      type: string
+                    name:
+                      nullable: true
+                      type: string
+                    serviceAccountRoleARN:
+                      nullable: true
+                      type: string
+                    status:
+                      nullable: true
+                      type: string
+                    version:
+                      nullable: true
+                      type: string
+                  type: object
+                nullable: true
+                type: array
               failureMessage:
                 nullable: true
                 type: string

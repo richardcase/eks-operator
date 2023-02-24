@@ -49,6 +49,7 @@ type EKSClusterConfigSpec struct {
 	SecurityGroups         []string          `json:"securityGroups" norman:"noupdate"`
 	ServiceRole            *string           `json:"serviceRole" norman:"noupdate,pointer"`
 	NodeGroups             []NodeGroup       `json:"nodeGroups"`
+	Addons                 []*Addon          `json:"addons"`
 }
 
 type EKSClusterConfigStatus struct {
@@ -60,8 +61,9 @@ type EKSClusterConfigStatus struct {
 	ManagedLaunchTemplateVersions map[string]string `json:"managedLaunchTemplateVersions"`
 	TemplateVersionsToDelete      []string          `json:"templateVersionsToDelete"`
 	// describes how the above network fields were provided. Valid values are provided and generated
-	NetworkFieldsSource string `json:"networkFieldsSource"`
-	FailureMessage      string `json:"failureMessage"`
+	NetworkFieldsSource string        `json:"networkFieldsSource"`
+	FailureMessage      string        `json:"failureMessage"`
+	Addons              []*AddonState `json:"addons"`
 }
 
 type NodeGroup struct {
@@ -89,4 +91,86 @@ type LaunchTemplate struct {
 	ID      *string `json:"id" norman:"pointer"`
 	Name    *string `json:"name" norman:"pointer"`
 	Version *int64  `json:"version"`
+}
+
+// Addon represents a EKS addon.
+type Addon struct {
+	// Name is the name of the addon
+	Name string `json:"name"`
+	// Version is the version of the addon to use
+	Version string `json:"version"`
+	// ConflictResolution is used to declare what should happen if there
+	// are parameter conflicts. Defaults to none
+	ConflictResolution *AddonResolution `json:"conflictResolution,omitempty"`
+	// ServiceAccountRoleArn is the ARN of an IAM role to bind to the addons service account
+	ServiceAccountRoleArn *string `json:"serviceAccountRoleARN,omitempty"`
+}
+
+// AddonResolution defines the method for resolving parameter conflicts.
+type AddonResolution string
+
+var (
+	// AddonResolutionOverwrite indicates that if there are parameter conflicts then
+	// resolution will be accomplished via overwriting.
+	AddonResolutionOverwrite = AddonResolution("overwrite")
+
+	// AddonResolutionNone indicates that if there are parameter conflicts then
+	// resolution will not be done and an error will be reported.
+	AddonResolutionNone = AddonResolution("none")
+)
+
+// AddonStatus defines the status for an addon.
+type AddonStatus string
+
+var (
+	// AddonStatusCreating is a status to indicate the addon is creating.
+	AddonStatusCreating = "creating"
+
+	// AddonStatusActive is a status to indicate the addon is active.
+	AddonStatusActive = "active"
+
+	// AddonStatusCreateFailed is a status to indicate the addon failed creation.
+	AddonStatusCreateFailed = "create_failed"
+
+	// AddonStatusUpdating is a status to indicate the addon is updating.
+	AddonStatusUpdating = "updating"
+
+	// AddonStatusDeleting is a status to indicate the addon is deleting.
+	AddonStatusDeleting = "deleting"
+
+	// AddonStatusDeleteFailed is a status to indicate the addon failed deletion.
+	AddonStatusDeleteFailed = "delete_failed"
+
+	// AddonStatusDegraded is a status to indicate the addon is in a degraded state.
+	AddonStatusDegraded = "degraded"
+)
+
+// AddonState represents the state of an addon.
+type AddonState struct {
+	// Name is the name of the addon
+	Name string `json:"name"`
+	// Version is the version of the addon to use
+	Version string `json:"version"`
+	// ARN is the AWS ARN of the addon
+	ARN string `json:"arn"`
+	// ServiceAccountRoleArn is the ARN of the IAM role used for the service account
+	ServiceAccountRoleArn *string `json:"serviceAccountRoleARN,omitempty"`
+	// CreatedAt is the date and time the addon was created at
+	CreatedAt metav1.Time `json:"createdAt,omitempty"`
+	// ModifiedAt is the date and time the addon was last modified
+	ModifiedAt metav1.Time `json:"modifiedAt,omitempty"`
+	// Status is the status of the addon
+	Status *string `json:"status,omitempty"`
+	// Issues is a list of issue associated with the addon
+	Issues []AddonIssue `json:"issues,omitempty"`
+}
+
+// AddonIssue represents an issue with an addon.
+type AddonIssue struct {
+	// Code is the issue code
+	Code *string `json:"code,omitempty"`
+	// Message is the textual description of the issue
+	Message *string `json:"message,omitempty"`
+	// ResourceIDs is a list of resource ids for the issue
+	ResourceIDs []string `json:"resourceIds,omitempty"`
 }

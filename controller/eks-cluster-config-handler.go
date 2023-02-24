@@ -173,7 +173,8 @@ func removeErrorMetadata(message string) (string, error) {
 	// Remove the first line of the message because it usually contains the name of an Amazon EKS error type that
 	// implements Seralizable (ex: ResourceInUseException). That name is unpredictable depending on the error. We
 	// only need cluster name, message, and node group.
-	index := strings.Index(message, "{"); if index == -1 {
+	index := strings.Index(message, "{")
+	if index == -1 {
 		return "", fmt.Errorf("message body not formatted as expected")
 	}
 	message = message[index:]
@@ -181,14 +182,15 @@ func removeErrorMetadata(message string) (string, error) {
 	// unmarshal json error to an object
 	in := []byte(message)
 	failureMessage := Message{}
-	err := yaml.Unmarshal(in, &failureMessage); if err != nil {
+	err := yaml.Unmarshal(in, &failureMessage)
+	if err != nil {
 		return "", err
 	}
 
 	// add error message fields without metadata to new object
 	failureMessageNoMeta := FailureMessage{
-		ClusterName: failureMessage.ClusterName,
-		Message_: failureMessage.Message_,
+		ClusterName:   failureMessage.ClusterName,
+		Message_:      failureMessage.Message_,
 		NodegroupName: failureMessage.NodegroupName,
 	}
 
@@ -310,6 +312,14 @@ func (h *Handler) checkAndUpdate(config *eksv1.EKSClusterConfig, eksService *eks
 		}
 		h.eksEnqueueAfter(config.Namespace, config.Name, 30*time.Second)
 		return config, nil
+	}
+
+	installedAddons, err := h.getClusterAddons(config.Spec.DisplayName, eksService)
+	if err != nil {
+		return config, err
+	}
+	for _, addon := range installedAddons {
+		logrus.Infof("installed addons %s version %s", addon.Name, addon.Version)
 	}
 
 	ngs, err := eksService.ListNodegroups(

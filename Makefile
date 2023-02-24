@@ -14,3 +14,16 @@ clean:
 	rm -rf build bin dist
 
 .PHONY: $(TARGETS)
+
+.PHONY: generate
+generate:
+	$(MAKE) generate-go
+	$(MAKE) generate-crd
+
+.PHONY: generate-crd
+generate-crd: $(MOCKGEN)
+	go generate main.go
+
+.PHONY: generate-go
+generate-go: $(MOCKGEN)
+	go generate ./pkg/apis/...
